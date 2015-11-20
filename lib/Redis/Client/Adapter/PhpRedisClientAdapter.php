@@ -2,28 +2,20 @@
 
 namespace Redis\Client\Adapter;
 
-use Redis\Client\Adapter\Predis\ClientFactory;
 use Redis\Client\ClientAdapter;
 
 class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientAdapter{
     
     /**
-     * Predis client
+     * PhpRedis client
      * @var \Predis\Client
      */
-    private $predisClient;
-
-    /**
-     * @var \Redis\Client\Adapter\Predis\ClientFactory
-     */
-    private $clientFactory;
+    private $client;
 
     /**
      * Constructor
-     * @param ClientFactory $clientFactory
      */
-    public function __construct(ClientFactory $clientFactory){
-        $this->clientFactory = $clientFactory;
+    public function __construct(){
     }
 
     /**
@@ -31,31 +23,19 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientAdapt
      * @return \Predis\Client
      */
     public function getClient(){
-        if (empty($this->predisClient)) {
+        if (empty($this->client)) {
             $this->connect();
         }
 
-        return $this->predisClient;
+        return $this->client;
     }
 
     /**
      * Connects to client
      */
     public function connect(){
-        $this->predisClient = $this->clientFactory->createClient($this->getClientParameters());
-        $this->predisClient->connect();
-    }
-
-    /**
-     * Gets client parameters
-     * @return array
-     */
-    private function getClientParameters(){
-        return array(
-            'scheme'    => 'tcp',
-            'host'      => $this->host,
-            'port'      => $this->port,
-        );
+        $this->client = new \Redis();
+        $this->client->connect($this->getHost(), $this->getPort());
     }
 
     /**
@@ -63,6 +43,9 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientAdapt
      * @return string
      */
     public function getRole(){
-        return $this->getClient()->role();
+        
+        $info = $this->getClient()->info();
+        
+        return array($info['role']);
     }
 }

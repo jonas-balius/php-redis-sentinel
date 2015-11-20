@@ -30,17 +30,16 @@ class SocketClientAdapter extends AbstractClientAdapter implements ClientSentine
     }
 
     /**
-     * Gets master by name
-     * @param string $name
-     * @return \Redis\Client
+     * Gets master
+     * @param string $name - master name
+     * @return array - first element is host and second is port
      */
     public function getMaster($name){
         
-        list($host, $port) = $this->getMasterAddress();
+        $data = $this->getMasterAddress();
         
-        if (!empty($host) && !empty($port)) {
-            $master = new Client($host, $port);
-            return $master;
+        if (isset($data[0]) && isset($data[1]) && !empty($data[0]) && !empty($data[1])){
+            return $data;
         }
         
         throw new SentinelError('The sentinel does not know the master address');

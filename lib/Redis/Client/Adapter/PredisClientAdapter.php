@@ -4,6 +4,7 @@ namespace Redis\Client\Adapter;
 
 use Redis\Client\Adapter\Predis\ClientFactory;
 use Redis\Client\ClientAdapter;
+use Redis\Client\Adapter\Predis\ClientCreator as RedisCreator;
 
 class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter{
     
@@ -22,7 +23,11 @@ class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter
      * Constructor
      * @param ClientFactory $clientFactory
      */
-    public function __construct(ClientFactory $clientFactory){
+    public function __construct(ClientFactory $clientFactory = null){
+        if (null === $clientFactory){
+            $clientFactory = new RedisCreator();
+        }
+        
         $this->clientFactory = $clientFactory;
     }
 

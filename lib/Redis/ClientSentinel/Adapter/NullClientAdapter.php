@@ -20,8 +20,13 @@ class NullClientAdapter extends AbstractClientAdapter implements ClientSentinelA
         $this->isConnected = true;
     }
 
+    /**
+     * Gets master
+     * @param string $name - master name
+     * @return array - first element is host and second is port
+     */
     public function getMaster($name){
-        return new Client('127.0.0.1', 6380);
+        return array('127.0.0.1', 6380);
     }
 
     public function getRole(){

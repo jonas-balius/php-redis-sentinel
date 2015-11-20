@@ -2,14 +2,10 @@
 
 namespace Redis\ClientSentinel\Adapter;
 
-use Redis\ClientSentinel\Adapter\Predis\Command\SentinelCommand;
+use Redis\ClientSentinel\ClientSentinelAdapter as SentinelAdapter;
 use Redis\ClientSentinel\Adapter\Predis\ClientFactory as SentinelFactory;
 use Redis\ClientSentinel\Adapter\Predis\ClientCreator as SentinelCreator;
-use Redis\ClientSentinel\ClientSentinelAdapter as SentinelAdapter;
-use Redis\Client\Adapter\Predis\ClientFactory as RedisFactory;
-use Redis\Client\Adapter\Predis\ClientCreator as RedisCreator;
-use Redis\Client\Adapter\PredisClientAdapter as RedisClientAdapter;
-use Redis\Client;
+use Redis\ClientSentinel\Adapter\Predis\Command\SentinelCommand;
 use Redis\Exception\SentinelError;
 
 class PredisClientAdapter extends AbstractClientAdapter implements SentinelAdapter{
@@ -25,30 +21,18 @@ class PredisClientAdapter extends AbstractClientAdapter implements SentinelAdapt
      * @var SentinelFactory
      */
     private $sentinelFactory;
-    
-    /**
-     * Redis factory
-     * @var RedisFactory
-     */
-    private $redisFactory;
 
     /**
      * Constructor
      * @param SentinelFactory $sentinelFactory
-     * @param RedisFactory $redisFactory
      */
-    public function __construct(SentinelFactory $sentinelFactory = null, RedisFactory $redisFactory = null){
+    public function __construct(SentinelFactory $sentinelFactory = null){
         
         if (null === $sentinelFactory){
             $sentinelFactory = new SentinelCreator();
         }
         
-        if (null === $redisFactory){
-            $redisFactory = new RedisCreator();
-        }
-        
         $this->sentinelFactory = $sentinelFactory;
-        $this->redisFactory = $redisFactory;
     }
 
     /**
@@ -90,19 +74,18 @@ class PredisClientAdapter extends AbstractClientAdapter implements SentinelAdapt
     public function getRole(){
         return $this->getClient()->role();
     }
-    
+
     /**
      * Gets master
      * @param string $name - master name
-     * @return \Redis\Client
+     * @return array - first element is host and second is port
      */
     public function getMaster($name){
     
-        list($host, $port) = $this->getClient()->sentinel(SentinelCommand::GETMASTER, $name);
-    
-        if (!empty($host) && !empty($port)) {
-            $master = new Client($host, $port, new RedisClientAdapter($this->redisFactory));
-            return $master;
+        $data = $this->getClient()->sentinel(SentinelCommand::GETMASTER, $name);
+        
+        if (isset($data[0]) && isset($data[1]) && !empty($data[0]) && !empty($data[1])){
+            return $data;
         }
     
         throw new SentinelError('The sentinel does not know the master address');
