@@ -8,10 +8,10 @@ use Redis\Client\ClientAdapter;
 class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter{
     
     /**
-     * Predis client
+     * Redis client
      * @var \Predis\Client
      */
-    private $predisClient;
+    private $client;
 
     /**
      * @var \Redis\Client\Adapter\Predis\ClientFactory
@@ -31,19 +31,19 @@ class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter
      * @return \Predis\Client
      */
     public function getClient(){
-        if (empty($this->predisClient)) {
+        if (empty($this->client)) {
             $this->connect();
         }
 
-        return $this->predisClient;
+        return $this->client;
     }
 
     /**
      * Connects to client
      */
     public function connect(){
-        $this->predisClient = $this->clientFactory->createClient($this->getClientParameters());
-        $this->predisClient->connect();
+        $this->client = $this->clientFactory->createClient($this->getClientParameters());
+        $this->client->connect();
     }
 
     /**
