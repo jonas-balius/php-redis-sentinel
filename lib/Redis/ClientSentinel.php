@@ -4,7 +4,6 @@ namespace Redis;
 
 use Redis\ClientSentinel\ClientSentinelAdapter as SentinelAdapter;
 use Redis\ClientSentinel\Adapter\Predis\ClientCreator as SentinelCreator;
-use Redis\Client\Adapter\Predis\ClientCreator as RedisCreator;
 use Redis\ClientSentinel\Adapter\PredisClientAdapter;
 use Redis\Exception\ConfigurationError;
 
@@ -28,7 +27,7 @@ class ClientSentinel extends AbstractClient{
 
         if (null === $clientAdapter) {
             //throw new ConfigurationError();
-            $clientAdapter = new PredisClientAdapter(new SentinelCreator(), new RedisCreator());
+            $clientAdapter = new PredisClientAdapter(new SentinelCreator());
         }
         
         $this->clientAdapter = $this->initializeClient($clientAdapter);

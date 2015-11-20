@@ -3,8 +3,8 @@
 namespace Redis\ClientSentinel\Adapter;
 
 use Redis\ClientSentinel\ClientSentinelAdapter as SentinelAdapter;
-use Redis\ClientSentinel\Adapter\Predis\ClientFactory as SentinelFactory;
-use Redis\ClientSentinel\Adapter\Predis\ClientCreator as SentinelCreator;
+use Redis\ClientSentinel\Adapter\Predis\ClientFactory;
+use Redis\ClientSentinel\Adapter\Predis\ClientCreator;
 use Redis\ClientSentinel\Adapter\Predis\Command\SentinelCommand;
 use Redis\Exception\SentinelError;
 
@@ -18,21 +18,21 @@ class PredisClientAdapter extends AbstractClientAdapter implements SentinelAdapt
 
     /**
      * Sentinel factory
-     * @var SentinelFactory
+     * @var ClientFactory
      */
-    private $sentinelFactory;
+    private $clientFactory;
 
     /**
      * Constructor
-     * @param SentinelFactory $sentinelFactory
+     * @param ClientFactory $clientFactory
      */
-    public function __construct(SentinelFactory $sentinelFactory = null){
+    public function __construct(ClientFactory $clientFactory = null){
         
-        if (null === $sentinelFactory){
-            $sentinelFactory = new SentinelCreator();
+        if (null === $clientFactory){
+            $clientFactory = new ClientCreator();
         }
         
-        $this->sentinelFactory = $sentinelFactory;
+        $this->clientFactory = $clientFactory;
     }
 
     /**
@@ -51,7 +51,7 @@ class PredisClientAdapter extends AbstractClientAdapter implements SentinelAdapt
      * Connects to client
      */
     public function connect(){
-        $this->client = $this->sentinelFactory->createClient($this->getClientParameters());
+        $this->client = $this->clientFactory->createClient($this->getClientParameters());
         $this->client->connect();
     }
 

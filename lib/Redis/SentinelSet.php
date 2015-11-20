@@ -127,7 +127,7 @@ class SentinelSet{
      * @return SplFixedArray
      */
     public function getSentinels(){
-        return \SplFixedArray::fromArray($this->sentinels);
+        return $this->sentinels;
     }
 
     /**
@@ -137,7 +137,8 @@ class SentinelSet{
      * @throws Exception\ConfigurationError
      */
     public function getMaster(){
-        if ($this->getSentinels()->count() == 0) {
+
+        if (count($this->getSentinels()) == 0) {
             throw new ConfigurationError('You need to configure and add sentinel nodes before attempting to fetch a master');
         }
 
