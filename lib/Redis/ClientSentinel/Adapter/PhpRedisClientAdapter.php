@@ -3,6 +3,7 @@
 namespace Redis\ClientSentinel\Adapter;
 
 use Redis\ClientSentinel\ClientSentinelAdapter;
+use Redis\Exception\SentinelError;
 
 class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientSentinelAdapter{
     
@@ -65,6 +66,8 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientSenti
             if (isset($params['name']) && $params['name'] === $name && isset($params['address'])){
                 return array($params['address']['host'], $params['address']['port']);
             }
+            
+            ++$i;
         }
         
         throw new SentinelError('The sentinel does not know the master address');
