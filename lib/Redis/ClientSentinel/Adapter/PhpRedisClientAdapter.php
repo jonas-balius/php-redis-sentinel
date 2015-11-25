@@ -47,7 +47,7 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientSenti
         
         $info = $this->getClient()->info();
         
-        return array($info['role']);
+        return $info['role'];
     }
     
     /**

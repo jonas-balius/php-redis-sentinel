@@ -30,6 +30,6 @@ class NullClientAdapter extends AbstractClientAdapter implements ClientSentinelA
     }
 
     public function getRole(){
-        return Client::ROLE_SENTINEL;
+        return Client::ROLE_MASTER;
     }
 }
