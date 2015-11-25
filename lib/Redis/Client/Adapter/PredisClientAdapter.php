@@ -68,6 +68,8 @@ class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter
      * @return string
      */
     public function getRole(){
-        return $this->getClient()->role();
+        $role = $this->getClient()->role();
+        
+        return $role[0];
     }
 }

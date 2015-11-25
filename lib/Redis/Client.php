@@ -53,7 +53,7 @@ class Client extends AbstractClient{
         // Doesn't work with Redis < 2.8.12
         //return true;
         
-        return $this->getRoleType() === self::ROLE_MASTER; 
+        return $this->getRole() === self::ROLE_MASTER; 
     }
 
     /**
@@ -61,6 +61,6 @@ class Client extends AbstractClient{
      * @return boolean
      */
     public function isSlave(){
-        return $this->getRoleType() === self::ROLE_SLAVE;
+        return $this->getRole() === self::ROLE_SLAVE;
     }
 }

@@ -58,6 +58,6 @@ class ClientSentinel extends AbstractClient{
      * @return boolean
      */
     public function isSentinel(){
-        return $this->getRoleType() === self::ROLE_SENTINEL;
+        return $this->getRole() === self::ROLE_SENTINEL;
     }
 }

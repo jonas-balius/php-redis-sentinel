@@ -45,7 +45,6 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements ClientAdapt
     public function getRole(){
         
         $info = $this->getClient()->info();
-        
-        return array($info['role']);
+        return $info['role'];
     }
 }

@@ -127,13 +127,4 @@ abstract class AbstractClient{
     public function getRole(){
         return $this->clientAdapter->getRole();
     }
-
-    /**
-     * Gets role type
-     * @return string
-     */
-    public function getRoleType(){
-        $role = $this->getRole();
-        return $role[0];
-    }
 }
