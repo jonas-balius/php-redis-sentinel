@@ -1,0 +1,26 @@
+{
+    "name": "jonas-balius/php-redis-sentinel",
+    "type": "library",
+    "description": "Sentinel client for the php redis client",
+    "keywords": ["nosql", "redis", "predis", "phpredis" "sentinel"],
+    "authors": [
+        {
+            "name": "Jonas Balius",
+            "email": "no@mail.com",
+            "homepage": "http://no.page",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.2",
+        "predis/predis": ">=0.8",
+        "symfony/validator": "~2.5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~3.7",
+        "phake/phake": "@stable"
+    },
+    "autoload": {
+        "psr-0": {"Sentinel": "lib/", "Redis": "lib/"}
+    }
+}
