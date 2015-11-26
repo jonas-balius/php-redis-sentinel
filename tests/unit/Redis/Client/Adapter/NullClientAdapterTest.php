@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Redis\Client\Adapter;
-
 
 use Redis\Client;
 
@@ -20,14 +18,13 @@ class NullClientAdapterTest extends \PHPUnit_Framework_TestCase
     {
         $clientAdapter = new NullClientAdapter();
         $master = $clientAdapter->getMaster('test');
-
-        $this->assertInstanceOf('\\Redis\\Client', $master, 'The master returned should be a \\Redis\\Client instance');
+        $this->assertTrue(is_array($master), 'The master returned should be an array');
+        $this->assertEquals(array('127.0.0.1', 6380), $master, 'The master returned does ot match expected');
     }
 
-    public function testThatTheRoleIsAlwaysSentinel()
+    public function testThatTheRoleIsAlwaysMaster()
     {
         $clientAdapter = new NullClientAdapter();
-        $this->assertEquals(Client::ROLE_SENTINEL, $clientAdapter->getRole(), 'The role is always sentinel');
+        $this->assertEquals(Client::ROLE_MASTER, $clientAdapter->getRole(), 'The role should be master');
     }
-}
- 
+} 
