@@ -2,9 +2,9 @@
 
 namespace Redis\BackoffStrategy;
 
-use Redis\BackoffStrategy;
+use Redis\BackoffStrategy\StrategyInterface;
 
-class None implements BackoffStrategy{
+class None implements StrategyInterface{
 
     private $incrementalStrategy;
 

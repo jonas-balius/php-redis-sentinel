@@ -1,8 +1,9 @@
 <?php
 
-namespace Redis;
+namespace Redis\Client;
 
-use Redis\Client\ClientAdapter;
+use Redis\Client\AdapterInterface as ClientAdapter;
+use Redis\Client\Adapter\PredisClientAdapter;
 //use Redis\Exception\InvalidProperty;
 //use Symfony\Component\Validator\Constraints\Collection;
 //use Symfony\Component\Validator\Constraints\Ip;
@@ -11,7 +12,7 @@ use Redis\Client\ClientAdapter;
 
 /**
  * Class Client
- * Represents one single sentinel node and provides identification if we want to connect to it
+ * Represents one single node and provides identification if we want to connect to it
  * @package Sentinel
  */
 abstract class AbstractClient{
@@ -38,6 +39,37 @@ abstract class AbstractClient{
      */
     protected $clientAdapter;
 
+    /**
+     * Cosntructor
+     * @param string $host
+     * @param string $port
+     * @param ClientAdapter $clientAdapter
+     */
+    public function __construct($host, $port, ClientAdapter $clientAdapter = null){
+    
+        $this->setHost($host);
+        $this->setPort($port);
+    
+        if (null === $clientAdapter) {
+            //throw new ConfigurationError();
+            $clientAdapter = new PredisClientAdapter();
+        }
+    
+        $this->clientAdapter = $this->initializeClient($clientAdapter);
+    }
+    
+    /**
+     * Initialises client
+     * @param ClientAdapter $clientAdapter
+     * @return ClientAdapter
+     */
+    protected function initializeClient(ClientAdapter $clientAdapter){
+        $clientAdapter->setHost($this->getHost());
+        $clientAdapter->setPort($this->getPort());
+    
+        return $clientAdapter;
+    }
+    
     /**
      * Sets host
      * @param string $host

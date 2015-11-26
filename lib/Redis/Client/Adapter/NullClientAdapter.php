@@ -2,7 +2,7 @@
 
 namespace Redis\Client\Adapter;
 
-use Redis\Client\ClientAdapter;
+use Redis\Client\AdapterInterface;
 use Redis\Client;
 
 /**
@@ -14,7 +14,7 @@ use Redis\Client;
  *
  * @package Sentinel\Client\Adapter
  */
-class NullClientAdapter extends AbstractClientAdapter implements ClientAdapter{
+class NullClientAdapter extends AbstractClientAdapter implements AdapterInterface{
     
     public function connect(){
         $this->isConnected = true;
@@ -22,5 +22,14 @@ class NullClientAdapter extends AbstractClientAdapter implements ClientAdapter{
 
     public function getRole(){
         return Client::ROLE_MASTER;
+    }
+    
+    /**
+     * Gets master
+     * @param string $name - master name
+     * @return array - first element is host and second is port
+     */
+    public function getMaster($name){
+        return array('127.0.0.1', 6380);
     }
 }

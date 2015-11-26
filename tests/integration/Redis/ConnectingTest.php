@@ -3,32 +3,39 @@
 
 namespace Redis;
 
-
 class ConnectingTest extends Redis_Integration_TestCase
 {
     public function testThatWeCanConnectToSentinelsAndInspectTheirRole()
     {
-        $sentinel1 = new Client('192.168.50.40', '26379');
-        $sentinel2 = new Client('192.168.50.41', '26379');
-        $sentinel3 = new Client('192.168.50.30', '26379');
-
-        for ($i = 1; $i <= 3; $i++) {
-            $nodeName = 'sentinel'.$i;
-            $this->assertEquals(Client::ROLE_SENTINEL, ${$nodeName}->getRole(), 'The role returned by sentinel '.$i.' is "sentinel"');
-            $this->assertTrue(${$nodeName}->isSentinel(), 'Verify that sentinel '.$i.' is a sentinel');
+        $clientAdapter = new Client\Adapter\SocketClientAdapter();
+        
+        $sentinels = array( new ClientSentinel('127.0.0.1', '26379', $clientAdapter),
+                            new ClientSentinel('127.0.0.1', '26380', $clientAdapter),
+                            new ClientSentinel('127.0.0.1', '26381', $clientAdapter)
+        );
+        
+        foreach ($sentinels as $key => $sentinel) {
+            $sentinel->connect();
+            $this->assertTrue($sentinel->isConnected(), 'Can not connect to sentinel '. $key);
+            $this->assertEquals(Client::ROLE_SENTINEL, $sentinel->getRole(), 'The role returned by sentinel '. $key. ' is wrong');
+            $this->assertTrue($sentinel->isSentinel(), 'Sentinel '. $key. ' is not a sentinel');
         }
     }
-
+    
     public function testThatWeCanConnectToMasterAndInspectTheRole()
     {
-        $master = new Client('192.168.50.40', '6379', null, Client::TYPE_REDIS);
-        $this->assertEquals(Client::ROLE_MASTER, $master->getRole(), 'The master should be identified with that type');
-        $this->assertTrue($master->isMaster(), 'Verify the master is a master');
+        $master = new Client('127.0.0.1', '6381', new Client\Adapter\PhpRedisClientAdapter());
+        $this->assertEquals(Client::ROLE_MASTER, $master->getRole(), 'Incorrect role for master');
+        $this->assertTrue($master->isMaster(), 'Can not verify that master is a master');
     }
-
+    
     public function testThatWeCanConnectToSlaveAndInspectTheRole()
     {
-        $slave = new Client('192.168.50.41', '6379', null, Client::TYPE_REDIS);
+        $slave = new Client('127.0.0.1', '6380', new Client\Adapter\PhpRedisClientAdapter());
+        $this->assertEquals(Client::ROLE_SLAVE, $slave->getRole(), 'The slave should be identified with that type');
+        $this->assertTrue($slave->isSlave(), 'Verify the slave is a slave');
+        
+        $slave = new Client('127.0.0.1', '6379', new Client\Adapter\PhpRedisClientAdapter());
         $this->assertEquals(Client::ROLE_SLAVE, $slave->getRole(), 'The slave should be identified with that type');
         $this->assertTrue($slave->isSlave(), 'Verify the slave is a slave');
     }

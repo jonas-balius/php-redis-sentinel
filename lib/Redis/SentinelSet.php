@@ -2,9 +2,9 @@
 
 namespace Redis;
 
-use Redis\Client\ClientAdapter;
+use Redis\Client\AdapterInterface as ClientAdapter;
+use Redis\BackoffStrategy\StrategyInterface;
 use Redis\BackoffStrategy\None;
-use Redis\BackoffStrategy;
 use Redis\Exception\ConfigurationError;
 use Redis\Exception\ConnectionError;
 use Redis\Exception\RoleError;
@@ -40,7 +40,7 @@ class SentinelSet{
     
     /**
      * Back of strategy
-     * @var Client\BackoffStrategy\None
+     * @var StrategyInterface
      */
     protected $backoffStrategy;
 
@@ -48,9 +48,9 @@ class SentinelSet{
      * Constructor
      * @param string $name
      * @param ClientAdapter $clientAdapter
-     * @param BackoffStrategy $backoffStrategy
+     * @param StrategyInterface $backoffStrategy
      */
-    public function __construct($name, ClientAdapter $clientAdapter, BackoffStrategy $backoffStrategy = null){
+    public function __construct($name, ClientAdapter $clientAdapter, StrategyInterface $backoffStrategy = null){
         
         if (null === $clientAdapter){
             throw new ConfigurationError('Client adapter not set');
@@ -84,15 +84,15 @@ class SentinelSet{
     
     /**
      * Sets backoff strategy
-     * @param BackoffStrategy $backoffStrategy
+     * @param StrategyInterface $backoffStrategy
      */
-    public function setBackoffStrategy(BackoffStrategy $backoffStrategy){
+    public function setBackoffStrategy(StrategyInterface $backoffStrategy){
         $this->backoffStrategy = $backoffStrategy;
     }
     
     /**
      * Gets backoff strategy
-     * @return BackoffStrategy $backoffStrategy
+     * @return StrategyInterface $backoffStrategy
      */
     public function getBackoffStrategy(){
         return $this->backoffStrategy;

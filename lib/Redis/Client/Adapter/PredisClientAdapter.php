@@ -3,10 +3,12 @@
 namespace Redis\Client\Adapter;
 
 use Redis\Client\Adapter\Predis\ClientFactory;
-use Redis\Client\ClientAdapter;
+use Redis\Client\AdapterInterface;
 use Redis\Client\Adapter\Predis\ClientCreator;
+use Redis\ClientSentinel\Adapter\Predis\Command\SentinelCommand;
+use Redis\Exception\SentinelError;
 
-class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter{
+class PredisClientAdapter extends AbstractClientAdapter implements AdapterInterface{
     
     /**
      * Redis client
@@ -15,7 +17,8 @@ class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter
     private $client;
 
     /**
-     * @var \Redis\Client\Adapter\Predis\ClientFactory
+     * Sentinel factory
+     * @var ClientFactory
      */
     private $clientFactory;
 
@@ -71,5 +74,21 @@ class PredisClientAdapter extends AbstractClientAdapter implements ClientAdapter
         $role = $this->getClient()->role();
         
         return $role[0];
+    }
+
+    /**
+     * Gets master
+     * @param string $name - master name
+     * @return array - first element is host and second is port
+     */
+    public function getMaster($name){
+    
+        $data = $this->getClient()->sentinel(SentinelCommand::GETMASTER, $name);
+        
+        if (isset($data[0]) && isset($data[1]) && !empty($data[0]) && !empty($data[1])){
+            return $data;
+        }
+    
+        throw new SentinelError('The sentinel does not know the master address');
     }
 }

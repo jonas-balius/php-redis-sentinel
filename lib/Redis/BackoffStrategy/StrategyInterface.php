@@ -1,8 +1,8 @@
 <?php
 
-namespace Redis;
+namespace Redis\BackoffStrategy;
 
-interface BackoffStrategy{
+interface StrategyInterface{
 
     public function getBackoffInMicroSeconds();
     public function reset();

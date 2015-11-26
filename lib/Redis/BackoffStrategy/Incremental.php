@@ -2,12 +2,12 @@
 
 namespace Redis\BackoffStrategy;
 
-use Redis\BackoffStrategy;
+use Redis\BackoffStrategy\StrategyInterface;
 // use Redis\Exception\InvalidProperty;
 // use Symfony\Component\Validator\Constraints\Range;
 // use Symfony\Component\Validator\Validation;
 
-class Incremental implements BackoffStrategy{
+class Incremental implements StrategyInterface{
 
     private $initialBackoff;
 

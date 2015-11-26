@@ -2,7 +2,9 @@
 
 namespace Redis\Client\Adapter;
 
-abstract class AbstractClientAdapter{
+use Redis\Client\AdapterInterface;
+
+abstract class AbstractClientAdapter implements AdapterInterface{
     
     protected $host;
     protected $port;

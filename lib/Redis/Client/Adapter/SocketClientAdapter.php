@@ -1,16 +1,18 @@
 <?php
 
-namespace Redis\ClientSentinel\Adapter;
+namespace Redis\Client\Adapter;
 
-use Redis\ClientSentinel\ClientSentinelAdapter;
+use Redis\Client\AdapterInterface;
 use Redis\Client;
 use Redis\Exception\ConnectionError;
 use Redis\Exception\SentinelError;
+use Redis\Exception\RoleError;
+use Redis\ClientTest;
 
 /**
- * Class SocketSentinelClientAdapter
+ * Class SocketClientAdapter
  */
-class SocketClientAdapter extends AbstractClientAdapter implements ClientSentinelAdapter{
+class SocketClientAdapter extends AbstractClientAdapter implements AdapterInterface{
 
     protected $socket;
     
@@ -30,34 +32,35 @@ class SocketClientAdapter extends AbstractClientAdapter implements ClientSentine
     }
 
     /**
+     * Gets role
+     * @return string
+     */
+    public function getRole(){
+        
+        return $this->getRoleInfo();
+    }
+    
+    /**
      * Gets master
      * @param string $name - master name
      * @return array - first element is host and second is port
      */
     public function getMaster($name){
-        
+    
         $data = $this->getMasterAddress();
-        
+    
         if (isset($data[0]) && isset($data[1]) && !empty($data[0]) && !empty($data[1])){
             return $data;
         }
-        
+    
         throw new SentinelError('The sentinel does not know the master address');
-    }
-
-    /**
-     * Gets role
-     * @return string
-     */
-    public function getRole(){
-        return Client::ROLE_SENTINEL;
     }
     
     /**
      * Gets masters
      * @return array where first element is host and second port
      */
-    public function getMasterAddress() {
+    private function getMasterAddress() {
         $this->connect();
         $this->write('SENTINEL get-master-addr-by-name mymaster');
         $this->write('QUIT');
@@ -69,6 +72,24 @@ class SocketClientAdapter extends AbstractClientAdapter implements ClientSentine
         }
         
         throw new SentinelError('The sentinel does not know the master address');
+    }
+    
+    private function getRoleInfo(){
+        
+        // TODO: implement role parsing
+        return Client::ROLE_SENTINEL;
+        
+        $this->connect();
+        $this->write('ROLE');
+        $this->write('QUIT');
+        $data = $this->extract($this->get());
+        $this->close();
+        
+        if ( isset($data[0]) && count($data[0]) === 1){
+            return array(key($data[0]), current($data[0]));
+        }
+        
+        throw new RoleError('Can not get role');
     }
     
     /**
