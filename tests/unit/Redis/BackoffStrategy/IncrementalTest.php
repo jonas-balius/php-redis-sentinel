@@ -1,11 +1,11 @@
 <?php
 
+namespace Redis\BackoffStrategy;
 
-namespace Redis\Client\BackoffStrategy;
-
+use Redis\BackoffStrategy\Incremental;
 
 class IncrementalTest extends \PHPUnit_Framework_TestCase
-{
+{   
     public function testThatWeCanChooseTheInitialBackoffValue()
     {
         $backoff = new Incremental(0, 1);
@@ -13,9 +13,6 @@ class IncrementalTest extends \PHPUnit_Framework_TestCase
 
         $backoff = new Incremental(500000, 1);
         $this->assertEquals(500000, $backoff->getBackoffInMicroSeconds(), 'We choose the initial backoff to be 500000');
-
-        $this->setExpectedException('\\Redis\\Exception\\InvalidProperty', 'The initial backoff cannot be smaller than zero');
-        new Incremental(-500000, 1);
     }
 
     public function testBackoffWithoutMultiplying()

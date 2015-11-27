@@ -1,8 +1,8 @@
 <?php
 
+namespace Redis\BackoffStrategy;
 
-namespace Redis\Client\BackoffStrategy;
-
+use Redis\BackoffStrategy\None;
 
 class NoneTest extends \PHPUnit_Framework_TestCase
 {

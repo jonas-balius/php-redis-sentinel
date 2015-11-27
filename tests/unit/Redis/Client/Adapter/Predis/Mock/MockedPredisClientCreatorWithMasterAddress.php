@@ -1,30 +1,18 @@
 <?php
 
-
 namespace Redis\Client\Adapter\Predis\Mock;
 
-
-use Redis\Client\Adapter\Predis\PredisClientFactory;
+use Redis\Client\Adapter\Predis\ClientFactory;
 use Redis\Client;
 
-class MockedPredisClientCreatorWithMasterAddress
-    extends AbstractMockedPredisClientCreator
-    implements PredisClientFactory
+class MockedPredisClientCreatorWithMasterAddress extends AbstractMockedPredisClientCreator implements ClientFactory
 {
-    public function createSentinelClient(array $parameters = array())
+    public function createClient(array $parameters = array())
     {
-        $mockedSentinelClient = \Phake::mock('\\Predis\\Client');
-        \Phake::when($mockedSentinelClient)->sentinel(\Phake::anyParameters())->thenReturn(array('127.0.0.1', 2020));
-        \Phake::when($mockedSentinelClient)->role()->thenReturn(Client::ROLE_SENTINEL);
-        return $mockedSentinelClient;
+        $mockedClient = \Phake::mock('\\Predis\\Client');
+        \Phake::when($mockedClient)->isMaster()->thenReturn(false);
+        \Phake::when($mockedClient)->role()->thenReturn(array(Client::ROLE_SENTINEL));
+        \Phake::when($mockedClient)->getMaster(\Phake::anyParameters())->thenReturn($mockedClient);
+        return $mockedClient;
     }
-
-    public function createRedisClient(array $parameters = array())
-    {
-        $mockedRedisClient = \Phake::mock('\\Redis\\Client');
-        \Phake::when($mockedRedisClient)->isMaster()->thenReturn(false);
-        \Phake::when($mockedRedisClient)->getMaster(\Phake::anyParameters())->thenReturn($mockedRedisClient);
-
-        return $mockedRedisClient;
-    }
-} 
+}

@@ -3,11 +3,9 @@
 namespace Redis\Client\Adapter;
 
 use Redis\Client\AdapterInterface;
-use Redis\Client;
 use Redis\Exception\ConnectionError;
 use Redis\Exception\SentinelError;
 use Redis\Exception\RoleError;
-use Redis\ClientTest;
 
 /**
  * Class SocketClientAdapter
@@ -77,7 +75,7 @@ class SocketClientAdapter extends AbstractClientAdapter implements AdapterInterf
     private function getRoleInfo(){
         
         // TODO: implement role parsing
-        return Client::ROLE_SENTINEL;
+        return 'sentinel';
         
         $this->connect();
         $this->write('ROLE');

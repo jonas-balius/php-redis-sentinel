@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Redis\Client\Adapter\Predis\Mock;
-
 
 use Redis\Client;
 

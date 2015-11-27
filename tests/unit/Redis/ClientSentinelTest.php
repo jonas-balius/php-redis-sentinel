@@ -3,128 +3,188 @@
 namespace Redis;
 
 use Redis\Exception\ConnectionError;
-use Redis\Client\Adapter\NullClientAdapter;
+use Redis\Client\Adapter\SocketClientAdapter;
 
 class ClientSentinelTest extends \PHPUnit_Framework_TestCase
 {
-    private $host = '127.0.0.1';
-    private $port = 2323;
-
-    public function testSentinelHasHostAndPort()
+    public function testClientHasHostAndPort()
     {
-        $sentinel = new ClientSentinel($this->host, $this->port);
-        $this->assertEquals($this->host, $sentinel->getHost(), 'Unable to get sentinel host');
-        $this->assertEquals($this->port, $sentinel->getPort(), 'Unable to get sentinel port');
+        $client = new ClientSentinel('10.13.12.1', 8541);
+        $this->assertEquals('10.13.12.1', $client->getHost(), 'Unable to get client sentinel host');
+        $this->assertEquals(8541, $client->getPort(), 'Unable to get client sentinel port');
     }
-
-    public function testSentinelHasPhpRedisAdapter()
+    
+    public function testClientHasPhpRedisAdapter()
     {
-        $sentinel = new ClientSentinel($this->host, $this->port, new Client\Adapter\PhpRedisClientAdapter());
-        $this->assertAttributeInstanceOf('\\Redis\\Client\\Adapter\\PhpRedisClientAdapter', 'clientAdapter', $sentinel, 'Can not retrevie correct adapter');
+        $client = new ClientSentinel('10.10.1.1', 1235, new Client\Adapter\PhpRedisClientAdapter());
+        $this->assertInstanceOf('\\Redis\\Client\\Adapter\\PhpRedisClientAdapter', $client->getClientAdapter(), 'Can not retrevie correct client adapter');
+        $this->assertAttributeInstanceOf('\\Redis\\Client\\Adapter\\PhpRedisClientAdapter', 'clientAdapter', $client, 'Not correct correct client adapter');
     }
-
-    public function testSentinelAcceptsOtherAdapters()
+    
+    public function testClientAcceptsOtherAdapters()
     {
-        $sentinel = new ClientSentinel($this->host, $this->port, new NullClientAdapter());
-        $this->assertAttributeInstanceOf('\\Redis\\Client\\Adapter\\NullClientAdapter', 'clientAdapter', $sentinel, 'The used redis client adapter can be swapped');
+        $client = new ClientSentinel('11.10.1.2', 2415, new SocketClientAdapter());
+        $this->assertInstanceOf('\\Redis\\Client\\Adapter\\SocketClientAdapter', $client->getClientAdapter(), 'Can not swap client adapters');
+        $this->assertAttributeInstanceOf('\\Redis\\Client\\Adapter\\SocketClientAdapter', 'clientAdapter', $client, 'Can not swap client adapters');
     }
-
-    public function testThatFailureToConnectToSentinelsThrowsAnError()
+    
+    public function testThatBeforeConnectingClientNodesKnowTheirConnectionState()
     {
-        $this->setExpectedException('\\Redis\\Exception\ConnectionError', sprintf('Could not connect to sentinel at %s:%d', $this->host, $this->port));
-
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $this->mockOfflineClientAdapter());
-        $sentinelNode->connect();
+        $client = new ClientSentinel('12.2.3.2', 4444, $this->createClientAdapterMock('sentinel', false));
+        $this->assertFalse($client->isConnected(), 'A new client should not be connected');
     }
-
-    public function testThatBeforeConnectingSentinelNodesKnowTheirConnectionState()
+    
+    public function testThatAfterAFailedConnectionAttemptClientNodesKnowTheirConnectionState()
     {
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $this->mockOfflineClientAdapter());
-        $this->assertFalse($sentinelNode->isConnected(), 'A new sentinel code object is not connected');
-    }
-
-    public function testThatAfterAFailedConnectionAttemptSentinelNodesKnowTheirConnectionState()
-    {
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $this->mockOfflineClientAdapter());
+        $client = new ClientSentinel('127.0.0.1', 4545, $this->createClientAdapterMock('sentinel', false));
         try {
-            $sentinelNode->connect();
+            $client->connect();
         } catch (ConnectionError $e) {
-
+    
         }
-        $this->assertFalse($sentinelNode->isConnected(), 'After a failed connection attempt, the connection state should be bool(false)');
+        $this->assertFalse($client->isConnected(), 'After a failed connection attempt, the connection state should be false');
     }
-
-    public function testThatAfterASuccessfullConnectionTheSentinelsKnowsTheirConnectionState()
+    
+    public function testThatAfterASuccessfullConnectionTheClientsKnowsTheirConnectionState()
     {
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $this->mockOnlineClientAdapter());
-        $sentinelNode->connect();
-        $this->assertTrue($sentinelNode->isConnected(), 'After a successfull connection attempt, the connection state is bool(true)');
+        $client = new ClientSentinel('142.2.2.2', 4547, $this->createClientAdapterMock('sentinel', true));
+        $client->connect();
+        $this->assertTrue($client->isConnected(), 'After a successfull connection attempt, the connection state is bool(true)');
     }
-
+    
     public function testThatWeCanGetTheClientAdapter()
     {
-        $onlineClientAdapter = $this->mockOnlineClientAdapter();
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $onlineClientAdapter);
-        $this->assertEquals($onlineClientAdapter, $sentinelNode->getClientAdapter(), 'A sentinel can return the client adapter');
+        $onlineClientAdapter = $this->createClientAdapterMock('sentinel', false);
+        $client = new ClientSentinel('1.2.3.4', 7878, $onlineClientAdapter);
+        $this->assertEquals($onlineClientAdapter, $client->getClientAdapter(), 'A client can not return the client adapter');
     }
-
-    public function testThatTheMasterReturnedComesFromClientAdapter()
-    {
-        $masterClient = \Phake::mock('\\Redis\\Client');
-        $masterClientAdapter = $this->mockClientAdapterForSentinel($masterClient);
-        $masterNode = new ClientSentinel($this->host, $this->port, $masterClientAdapter);
-        $this->assertEquals($masterClient, $masterNode->getMaster('test'), 'The redis client gets the master object from the client adapter');
-    }
-
+    
     public function testThatTheRoleReturnedComesFromClientAdapter()
     {
-        $sentinelClientAdapter = $this->mockClientAdapterForSentinel();
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $sentinelClientAdapter);
-        $this->assertEquals(Client::ROLE_SENTINEL, $sentinelNode->getRole(), 'The role of the node is provided by the client adapter');
-    }
-
-    public function testThatASentinelIsBeingIdentifiedAsOne()
-    {
-        $sentinelClientAdapter = $this->mockClientAdapterForSentinel();
-        $sentinelNode = new ClientSentinel($this->host, $this->port, $sentinelClientAdapter);
-        $this->assertTrue($sentinelNode->isSentinel(), 'A sentinel should be identified as sentinel');
-    }
-
-    private function mockOfflineClientAdapter()
-    {
-        $redisClientAdapter = \Phake::mock('\\Redis\\Client\\Adapter\\PhpRedisClientAdapter');
-        \Phake::when($redisClientAdapter)->connect()->thenThrow(
-            new ConnectionError(sprintf('Could not connect to sentinel at %s:%d', $this->host, $this->port))
-        );
-        \Phake::when($redisClientAdapter)->isConnected()->thenReturn(false);
-    
-        return $redisClientAdapter;
+        $client = new ClientSentinel('10.3.6.9', 7451, $this->createClientAdapterMock('sentinel', false));
+        $this->assertEquals(ClientSentinel::ROLE_SENTINEL, $client->getRole(), 'The role should be sentinel');
     }
     
-    private function mockOnlineClientAdapter()
+    public function testThatNodeIsBeingIdentifiedCorrectly()
     {
-        $redisClientAdapter = \Phake::mock('\\Redis\\Client\\Adapter\\PhpRedisClientAdapter');
-        \Phake::when($redisClientAdapter)->isConnected()->thenReturn(true);
-    
-        return $redisClientAdapter;
+        $client = new ClientSentinel('10.1.9.8', 5123, $this->createClientAdapterMock('sentinel', false));
+        $this->assertTrue($client->isSentinel(), 'A sentinel should be identified as sentinel');
     }
     
-    private function mockClientAdapterForSentinel($sentinelClient = null)
+    public function testThatTheMasterReturnedComesFromClientAdapter()
     {
-        return $this->mockClientAdapterForRole(Client::ROLE_SENTINEL, $sentinelClient);
+        $adapter = $this->createClientAdapterMock('sentinel', false);
+        $client = new ClientSentinel('1.2.3.4', 7878, $adapter);
+        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('mymaster'), 'Can not get master');
+        
+        $this->setExpectedException('\\Redis\\Exception\\SentinelError', 'The sentinel does not know the master address');
+        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('testmaster'), 'Can not get master');
     }
     
-    private function mockClientAdapterForRole($role, $client = null)
-    {
-        if (empty($client)) {
-            $client = \Phake::mock('\\Redis\\ClientSentinel');
+    /**
+     * Creates client adapter mock
+     * @param string $type (master|slave|sentinel)
+     * @param bool $connected - connected or not
+     * @return PhpRedisClientAdapter
+     */
+    private function createClientAdapterMock($type, $connected = true){
+    
+        switch ($type) {
+            case 'master':
+                $client = $this->createMasterClientMock($connected);
+                break;
+            case 'slave':
+                $client = $this->createSlaveClientMock($connected);
+                break;
+            case 'sentinel':
+            default:
+                $client = $this->createSentinelClientMock($connected);
+                break;
         }
-
-        $redisClientAdapter = \Phake::mock('\\Redis\\Client\\Adapter\\SocketClientAdapter');
-        \Phake::when($redisClientAdapter)->isConnected()->thenReturn(true);
-        \Phake::when($redisClientAdapter)->getMaster('test')->thenReturn($client);
-        \Phake::when($redisClientAdapter)->getRole()->thenReturn($role);
     
-        return $redisClientAdapter;
+        $adapter = $this->getMockBuilder('\Redis\Client\Adapter\PhpRedisClientAdapter')
+            ->setMethods(array('getClient', 'isConnected', 'connect'))
+            ->getMock();
+    
+        $adapter->expects($this->any())
+            ->method('getClient')
+            ->will($this->returnValue($client));
+    
+        $adapter->expects($this->any())
+            ->method('isConnected')
+            ->will($this->returnValue($connected));
+    
+        $adapter->expects($this->any())
+            ->method('connect')
+            ->will($this->returnValue($client->connect()));
+    
+        return $adapter;
+    }
+    
+    /**
+     * Creates master client mock
+     * @param bool $connected - connected or not
+     * @return \Redis
+     */
+    private function createMasterClientMock($connected = false)
+    {
+        $client = $this->getMockBuilder('\Redis')
+            ->setMethods(array('info', 'connect'))
+            ->getMock();
+    
+        $client->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue(array('role' => 'master')));
+    
+        $client->expects($this->any())
+            ->method('connect')
+            ->will($this->returnValue($connected));
+    
+        return $client;
+    }
+    
+    /**
+     * Creates slave client mock
+     * @param bool $connected - connected or not
+     * @return \Redis
+     */
+    private function createSlaveClientMock($connected = false)
+    {
+        $client = $this->getMockBuilder('\Redis')
+            ->setMethods(array('info', 'connect'))
+            ->getMock();
+    
+        $client->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue(array('role' => 'slave')));
+    
+        $client->expects($this->any())
+            ->method('connect')
+            ->will($this->returnValue($connected));
+    
+        return $client;
+    }
+    
+    /**
+     * Creates sentinel client mock
+     * @param bool $connected - connected or not
+     * @return \Redis
+     */
+    private function createSentinelClientMock($connected = false)
+    {
+        $client = $this->getMockBuilder('\Redis')
+            ->setMethods(array('info', 'connect'))
+            ->getMock();
+    
+        $client->expects($this->any())
+            ->method('info')
+            ->will($this->returnValue(array('role' => 'sentinel',
+                                            'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+    
+        $client->expects($this->any())
+            ->method('connect')
+            ->will($this->returnValue($connected));
+    
+        return $client;
     }
 } 

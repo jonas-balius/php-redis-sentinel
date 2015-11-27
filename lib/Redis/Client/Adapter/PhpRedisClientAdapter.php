@@ -37,7 +37,7 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements AdapterInte
      */
     public function connect(){
         $this->client = new \Redis();
-        $this->client->connect($this->getHost(), $this->getPort());
+        $this->isConnected = $this->client->connect($this->getHost(), $this->getPort());
     }
 
     /**
@@ -57,7 +57,7 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements AdapterInte
     }
     
     /**
-     * Gets master. PhpRedis does not support sentinel commands in v2.7, so we get master from info
+     * Gets master. PhpRedis does not support sentinel commands in v2.2.7, so we get master from info
      * @param string $name - master name
      * @return array - first element is host and second is port
      */

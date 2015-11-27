@@ -5,7 +5,7 @@ namespace Redis\Client\Adapter;
 use Redis\Client\Adapter\Predis\ClientFactory;
 use Redis\Client\AdapterInterface;
 use Redis\Client\Adapter\Predis\ClientCreator;
-use Redis\ClientSentinel\Adapter\Predis\Command\SentinelCommand;
+use Redis\Client\Adapter\Predis\Command\SentinelCommand;
 use Redis\Exception\SentinelError;
 
 class PredisClientAdapter extends AbstractClientAdapter implements AdapterInterface{

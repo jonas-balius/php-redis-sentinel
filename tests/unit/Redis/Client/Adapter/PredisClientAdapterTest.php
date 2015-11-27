@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Redis\Client\Adapter;
-
 
 use Redis\Client\Adapter\Predis\Mock\MockedPredisClientCreatorWithMasterAddress;
 use Redis\Client\Adapter\Predis\Mock\MockedPredisClientCreatorWithNoMasterAddress;
@@ -17,17 +15,17 @@ class PredisClientAdapterTest extends \PHPUnit_Framework_TestCase
     
     public function testThatAPredisClientIsCreatedOnConnect()
     {
-        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithNoMasterAddress(), Client::TYPE_SENTINEL);
+        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithNoMasterAddress());
         $clientAdapter->setHost('127.0.0.1');
         $clientAdapter->setPort(4545);
         $clientAdapter->connect();
 
-        $this->assertAttributeInstanceOf('\\Predis\\Client', 'predisClient', $clientAdapter, 'The adapter should create and configure a \\Predis\\Client object');
+        $this->assertAttributeInstanceOf('\\Predis\\Client', 'client', $clientAdapter, 'The adapter should create and configure a \\Predis\\Client object');
     }
 
     public function testThatMasterIsOfCorrectType()
     {
-        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithMasterAddress(), Client::TYPE_SENTINEL);
+        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithMasterAddress());
         $clientAdapter->setHost('127.0.0.1');
         $clientAdapter->setPort(4545);
         $clientAdapter->connect();
@@ -40,7 +38,7 @@ class PredisClientAdapterTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('\\Redis\\Exception\\SentinelError', 'The sentinel does not know the master address');
 
-        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithNoMasterAddress(), Client::TYPE_SENTINEL);
+        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithNoMasterAddress());
         $clientAdapter->setHost('127.0.0.1');
         $clientAdapter->setPort(4545);
         $clientAdapter->connect();
@@ -49,7 +47,7 @@ class PredisClientAdapterTest extends \PHPUnit_Framework_TestCase
 
     public function testThatTheAdapterReturnsTheRoleOfTheServer()
     {
-        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithMasterAddress(), Client::TYPE_SENTINEL);
+        $clientAdapter = new PredisClientAdapter(new MockedPredisClientCreatorWithMasterAddress());
         $clientAdapter->setHost('127.0.0.1');
         $clientAdapter->setPort(4545);
         $clientAdapter->connect();

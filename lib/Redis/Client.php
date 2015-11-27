@@ -2,9 +2,7 @@
 
 namespace Redis;
 
-use Redis\Client\Adapter\PredisClientAdapter;
 use Redis\Client\AbstractClient;
-use Redis\Exception\ConfigurationError;
 
 /**
  * Class Client
