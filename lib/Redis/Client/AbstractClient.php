@@ -4,6 +4,7 @@ namespace Redis\Client;
 
 use Redis\Client\AdapterInterface as ClientAdapter;
 use Redis\Client\Adapter\PredisClientAdapter;
+use Redis\Exception\ConnectionError;
 //use Redis\Exception\InvalidProperty;
 //use Symfony\Component\Validator\Constraints\Collection;
 //use Symfony\Component\Validator\Constraints\Ip;
@@ -133,7 +134,13 @@ abstract class AbstractClient{
      * Connects
      */
     public function connect(){
-        $this->clientAdapter->connect();
+
+        try {
+            $this->clientAdapter->connect();
+        }
+        catch( \Exception $e){
+            throw new ConnectionError('Unable to connect to redis at '. $this->getHost(). ':'. $this->getPort(), null, $e);
+        }
     }
 
     /**

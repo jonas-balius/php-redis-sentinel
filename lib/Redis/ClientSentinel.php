@@ -15,7 +15,7 @@ class ClientSentinel extends AbstractClient{
 
     /**
      * Gets master
-     * @return \Redis\Client
+     * @return array
      */
     public function getMaster($name){
         return $this->clientAdapter->getMaster($name);

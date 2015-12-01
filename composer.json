@@ -2,7 +2,7 @@
     "name": "jonas-balius/php-redis-sentinel",
     "type": "library",
     "description": "Sentinel client for the php redis client",
-    "keywords": ["nosql", "redis", "predis", "phpredis" "sentinel"],
+    "keywords": ["nosql", "redis", "predis", "phpredis", "sentinel"],
     "authors": [
         {
             "name": "Jonas Balius",

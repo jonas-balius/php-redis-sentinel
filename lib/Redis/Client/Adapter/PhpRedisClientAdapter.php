@@ -12,7 +12,7 @@ class PhpRedisClientAdapter extends AbstractClientAdapter implements AdapterInte
      * PhpRedis client
      * @var \Predis\Client
      */
-    private $client;
+    protected $client;
 
     /**
      * Constructor

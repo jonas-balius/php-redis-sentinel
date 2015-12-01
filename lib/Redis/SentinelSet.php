@@ -3,6 +3,7 @@
 namespace Redis;
 
 use Redis\Client\AdapterInterface as ClientAdapter;
+use Redis\Client\Factory as ClientFactory;
 use Redis\BackoffStrategy\StrategyInterface;
 use Redis\BackoffStrategy\None;
 use Redis\Exception\ConfigurationError;
@@ -39,6 +40,12 @@ class SentinelSet{
     protected $clientAdapter;
     
     /**
+     * Client factory
+     * @var ClientFactory
+     */
+    protected $clientFactory;
+    
+    /**
      * Back of strategy
      * @var StrategyInterface
      */
@@ -51,10 +58,6 @@ class SentinelSet{
      * @param StrategyInterface $backoffStrategy
      */
     public function __construct($name, ClientAdapter $clientAdapter, StrategyInterface $backoffStrategy = null){
-        
-        if (null === $clientAdapter){
-            throw new ConfigurationError('Client adapter not set');
-        }
         
         if (null === $backoffStrategy){
             $backoffStrategy = new None(); // by default we don't implement a backoff
@@ -115,6 +118,28 @@ class SentinelSet{
     }
     
     /**
+     * Sets client factory
+     * @param ClientFactory $clientFactory
+     */
+    public function setClientFactory(ClientFactory $clientFactory){
+    
+        $this->clientFactory = $clientFactory;
+    }
+    
+    /**
+     * Gets client factory
+     * @return ClientFactory
+     */
+    public function getClientFactory(){
+    
+        if (is_null($this->clientFactory)){
+            $this->setClientFactory( new ClientFactory());
+        }
+    
+        return $this->clientFactory;
+    }
+    
+    /**
      * Adds sentinel
      * @param ClientSentinel $sentinelClient
      */
@@ -150,7 +175,9 @@ class SentinelSet{
                         $sentinelClient->connect();
                         list($masterHost, $masterPort) = $sentinelClient->getMaster($this->getName());
                         
-                        $redisClient = new Client($masterHost, $masterPort, $this->getClientAdapter());
+                        // We can't test if we are building a client here
+                        //$redisClient = new Client($masterHost, $masterPort, $this->getClientAdapter());
+                        $redisClient = $this->getClientFactory()->createClient($masterHost, $masterPort, $this->getClientAdapter(), ClientFactory::TYPE_REDIS);
 
                         if ($redisClient->isMaster()) {
                             return $redisClient;
