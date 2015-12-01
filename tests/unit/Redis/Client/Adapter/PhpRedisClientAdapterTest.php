@@ -41,8 +41,62 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
         $clientAdapter->setHost('142.21.21.1');
         $clientAdapter->setPort(2030);
     
-        $this->assertEquals(Client::ROLE_SENTINEL, $clientAdapter->getRole(), 'The master role should be "master"');
+        $this->assertEquals(Client::ROLE_SENTINEL, $clientAdapter->getRole(), 'The master role should be "sentinel"');
     }
+    
+    public function testThatDefaultSentinelRoleIsCorrect()
+    {
+        $clientAdapter = $this->createClientAdapterMock('sentinel', false);
+        $clientAdapter->setHost('142.21.21.1');
+        $clientAdapter->setPort(2030);
+    
+        $this->assertEquals(Client::ROLE_SENTINEL, $clientAdapter->getRole(), 'The master role should be "sentinel"');
+    }
+    
+    public function testGetClient()
+    {
+        $clientAdapter = $this->getMockBuilder('\Redis\Client\Adapter\PhpRedisClientAdapter')
+            ->setMethods(array('connect'))
+            ->getMock();
+        
+        $clientAdapter->expects($this->any())
+            ->method('connect')
+            ->will($this->returnValue(null));
+
+//         // Setting internal private property
+//         $reflection = new \ReflectionClass($clientAdapter);
+//         $reflectionProperty = $reflection->getProperty('client');
+//         $reflectionProperty->setAccessible(true);
+//         $reflectionProperty->setValue($clientAdapter, new \Redis());
+//         $reflectionProperty->setAccessible(false);
+        
+        $clientAdapter->setHost('142.21.21.12');
+        $clientAdapter->setPort(2040);
+        $this->assertTrue(is_null($clientAdapter->getClient()));
+        //$this->assertTrue($clientAdapter->getClient() instanceof \Redis, 'Unable to get client');
+    }
+    
+//     public function testGetClientCorrectInstance()
+//     {
+//         $clientAdapter = $this->getMockBuilder('\Redis\Client\Adapter\PhpRedisClientAdapter')
+//             ->setMethods(array('connect'))
+//             ->getMock();
+//    
+//         $clientAdapter->expects($this->any())
+//             ->method('connect')
+//             ->will($this->returnValue(null));
+//    
+//         // Setting internal private property
+//         $reflection = new \ReflectionClass($clientAdapter);
+//         $reflectionProperty = $reflection->getProperty('client');
+//         $reflectionProperty->setAccessible(true);
+//         $reflectionProperty->setValue($clientAdapter, new \Redis());
+//         $reflectionProperty->setAccessible(false);
+//    
+//         $clientAdapter->setHost('142.21.21.12');
+//         $clientAdapter->setPort(2040);
+//         $this->assertTrue($clientAdapter->getClient() instanceof \Redis, 'Unable to get client');
+//     }
 
     public function testThatMasterIsOfCorrectType()
     {
@@ -66,9 +120,10 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
     /**
      * Creates client adapter mock
      * @param string $type (master|slave|sentinel)
+     * @param bool $hasInfo has info, or not (neede for sentinel client only)
      * @return PhpRedisClientAdapter
      */
-    private function createClientAdapterMock($type){
+    private function createClientAdapterMock($type, $hasInfo = true){
         
         switch ($type) {
             case 'master':
@@ -79,7 +134,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
             break;
             case 'sentinel':
             default:
-                $client = $this->createSentinelClientMock();
+                $client = $this->createSentinelClientMock($hasInfo);
             break;
         }
         
@@ -130,18 +185,26 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
     
     /**
      * Creates sentinel client mock
+     * @param bool $hasInfo has info, or not (neede for sentinel client only)
      * @return \Redis
      */
-    private function createSentinelClientMock()
+    private function createSentinelClientMock($hasInfo = true)
     {
         $client = $this->getMockBuilder('\Redis')
             ->setMethods(array('info'))
             ->getMock();
     
-        $client->expects($this->any())
-            ->method('info')
-            ->will($this->returnValue(array('role' => 'sentinel',
-                                            'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+        if ($hasInfo){
+            $client->expects($this->any())
+                ->method('info')
+                ->will($this->returnValue(array('role' => 'sentinel',
+                                                'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+        }
+        else{
+            $client->expects($this->any())
+                ->method('info')
+                ->will($this->returnValue(array()));
+        }
     
         return $client;
     }

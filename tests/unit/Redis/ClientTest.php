@@ -44,6 +44,19 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         }
         $this->assertFalse($client->isConnected(), 'After a failed connection attempt, the connection state should be false');
     }
+    
+    public function testThatExceptionIsThrownIfCanNotConnect()
+    {
+        $adapter = $this->createClientAdapterMock('master', false);
+        $adapter->expects($this->any())
+            ->method('connect')
+            ->will($this->throwException(new \Exception('Can not connect')));
+        
+        $client = new Client('12.2.3.2', 4444, $adapter);
+        
+        $this->setExpectedException('\\Redis\\Exception\\ConnectionError', 'Unable to connect to redis at 12.2.3.2:4444');
+        $client->connect();
+    }
 
     public function testThatAfterASuccessfullConnectionTheClientsKnowsTheirConnectionState()
     {
