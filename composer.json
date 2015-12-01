@@ -17,8 +17,7 @@
         "symfony/validator": "~2.5.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "~3.7",
-        "phake/phake": "@stable"
+        "phpunit/phpunit": "~3.7"
     },
     "autoload": {
         "psr-0": {"Sentinel": "lib/", "Redis": "lib/"}
