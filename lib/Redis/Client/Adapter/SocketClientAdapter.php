@@ -45,7 +45,7 @@ class SocketClientAdapter extends AbstractClientAdapter implements AdapterInterf
      */
     public function getMaster($name){
     
-        $data = $this->getMasterAddress();
+        $data = $this->getMasterAddress($name);
     
         if (isset($data[0]) && isset($data[1]) && !empty($data[0]) && !empty($data[1])){
             return $data;
@@ -55,12 +55,13 @@ class SocketClientAdapter extends AbstractClientAdapter implements AdapterInterf
     }
     
     /**
-     * Gets masters
+     * Gets master address
+     * @param string $name - master name
      * @return array where first element is host and second port
      */
-    private function getMasterAddress() {
+    private function getMasterAddress($name) {
         $this->connect();
-        $this->write('SENTINEL get-master-addr-by-name mymaster');
+        $this->write('SENTINEL get-master-addr-by-name '. $name);
         $this->write('QUIT');
         $data = $this->extract($this->get());
         $this->close();
