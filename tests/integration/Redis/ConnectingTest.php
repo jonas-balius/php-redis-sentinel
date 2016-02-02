@@ -8,7 +8,7 @@ class ConnectingTest extends Redis_Integration_TestCase
     protected function setUp(){
         
         if (!extension_loaded('redis')) {
-            $this->markAsSkipped('phpredis extension is not loaded so we skip the tests');
+            $this->markTestSkipped('phpredis extension is not loaded so we skip the tests');
         }
     }
     

@@ -75,10 +75,10 @@ class ClientSentinelTest extends \PHPUnit_Framework_TestCase
     {
         $adapter = $this->createClientAdapterMock('sentinel', false);
         $client = new ClientSentinel('1.2.3.4', 7878, $adapter);
-        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('mymaster'), 'Can not get master');
+        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('test-master'), 'Can not get master');
         
         $this->setExpectedException('\\Redis\\Exception\\SentinelError', 'The sentinel does not know the master address');
-        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('testmaster'), 'Can not get master');
+        $this->assertEquals(array('154.21.25.1', 6379), $client->getMaster('invalid-master'), 'Should not be able to get non existent master');
     }
     
     /**
@@ -179,7 +179,7 @@ class ClientSentinelTest extends \PHPUnit_Framework_TestCase
         $client->expects($this->any())
             ->method('info')
             ->will($this->returnValue(array('role' => 'sentinel',
-                                            'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+                                            'master0' => 'name=test-master,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
     
         $client->expects($this->any())
             ->method('connect')

@@ -27,7 +27,7 @@ $sentinel3 = new ClientSentinel('127.0.0.1', 26381, $redisLibraryAdapter);
 
 echo 2;
 
-$monitor = new SentinelSet('mymaster', new PhpRedisClientAdapter());
+$monitor = new SentinelSet('test-master', new PhpRedisClientAdapter());
 
 echo 3;
 
@@ -99,7 +99,7 @@ exit;
 
 $redis = new \Redis();
 $redis->connect('127.0.0.1', 26380);
-$redis->sentinel('get-master-addr-by-name mymaster');
+$redis->sentinel('get-master-addr-by-name test-master');
 
 print_r($redis->info());
 

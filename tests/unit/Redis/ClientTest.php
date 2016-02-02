@@ -190,7 +190,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase
         $client->expects($this->any())
             ->method('info')
             ->will($this->returnValue(array('role' => 'sentinel',
-                                            'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+                                            'master0' => 'name=test-master,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
             
         $client->expects($this->any())
             ->method('connect')
