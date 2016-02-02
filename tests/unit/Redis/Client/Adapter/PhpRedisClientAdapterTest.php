@@ -6,13 +6,15 @@ use Redis\Client;
 
 class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
 {
+    protected $mockClass = null;
+    
     protected function setUp()
     {
-        //$this->markTestSkipped('We do not test PhpRedis.');
+        $this->mockClass = extension_loaded('redis')? '\\Redis': '\\stdClass';
     }
-    
+
     public function testThatPhpRredisClientIsCreatedOnConnect()
-    {
+    {   
         if (!extension_loaded('redis')) {
             $this->markTestSkipped('phpredis extension is not loaded so we skip this test');
         }
@@ -22,7 +24,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
         $clientAdapter->setPort(4545);
         $clientAdapter->connect();
 
-        $this->assertInstanceOf('\\Redis', $clientAdapter->getClient(), 'The adapter should return a \Redis object');
+        $this->assertInstanceOf($this->mockClass, $clientAdapter->getClient(), 'The adapter should return a \Redis object');
         $this->assertAttributeInstanceOf('\\Redis', 'client', $clientAdapter, 'The adapter should create and configure a \Redis object');
     }
     
@@ -63,21 +65,17 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
             ->method('connect')
             ->will($this->returnValue(null));
 
-//         // Setting internal private property
-//         $reflection = new \ReflectionClass($clientAdapter);
-//         $reflectionProperty = $reflection->getProperty('client');
-//         $reflectionProperty->setAccessible(true);
-//         $reflectionProperty->setValue($clientAdapter, new \Redis());
-//         $reflectionProperty->setAccessible(false);
-        
         $clientAdapter->setHost('142.21.21.12');
         $clientAdapter->setPort(2040);
         $this->assertTrue(is_null($clientAdapter->getClient()));
-        //$this->assertTrue($clientAdapter->getClient() instanceof \Redis, 'Unable to get client');
     }
     
 //     public function testGetClientCorrectInstance()
 //     {
+//         if (!extension_loaded('redis')) {
+//             $this->markTestSkipped('phpredis extension is not loaded so we skip this test');
+//         }
+//    
 //         $clientAdapter = $this->getMockBuilder('\Redis\Client\Adapter\PhpRedisClientAdapter')
 //             ->setMethods(array('connect'))
 //             ->getMock();
@@ -104,7 +102,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
         $clientAdapter->setHost('124.2.21.51');
         $clientAdapter->setPort(4545);
         
-        $this->assertEquals(array('154.21.25.1', 6379), $clientAdapter->getMaster('mymaster'), 'Wrong master address');
+        $this->assertEquals(array('154.21.25.1', 6379), $clientAdapter->getMaster('test-master'), 'Wrong master address');
     }
     
     public function testThatExceptionIsThrownWhenMasterIsUnknownToSentinel()
@@ -114,7 +112,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
         $clientAdapter->setPort(4548);
         
         $this->setExpectedException('\\Redis\\Exception\\SentinelError', 'The sentinel does not know the master address');
-        $this->assertEquals(array('127.0.0.1', 6381), $clientAdapter->getMaster('testmaster'), 'This master should not exists');
+        $this->assertEquals(array('127.0.0.1', 6381), $clientAdapter->getMaster('invalid-master'), 'This master should not exists');
     }
 
     /**
@@ -155,7 +153,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
      */
     private function createMasterClientMock()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getMockBuilder($this->mockClass)
             ->setMethods(array('info'))
             ->getMock();
     
@@ -172,7 +170,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
      */
     private function createSlaveClientMock()
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getMockBuilder($this->mockClass)
             ->setMethods(array('info'))
             ->getMock();
     
@@ -190,7 +188,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
      */
     private function createSentinelClientMock($hasInfo = true)
     {
-        $client = $this->getMockBuilder('\Redis')
+        $client = $this->getMockBuilder($this->mockClass)
             ->setMethods(array('info'))
             ->getMock();
     
@@ -198,7 +196,7 @@ class PhpRedisClientAdapterTest extends \PHPUnit_Framework_TestCase
             $client->expects($this->any())
                 ->method('info')
                 ->will($this->returnValue(array('role' => 'sentinel',
-                                                'master0' => 'name=mymaster,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
+                                                'master0' => 'name=test-master,status=ok,address=154.21.25.1:6379,slaves=2,sentinels=3')));
         }
         else{
             $client->expects($this->any())
