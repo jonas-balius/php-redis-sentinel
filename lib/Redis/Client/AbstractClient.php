@@ -41,7 +41,7 @@ abstract class AbstractClient{
     protected $clientAdapter;
 
     /**
-     * Cosntructor
+     * Constructor
      * @param string $host
      * @param string $port
      * @param ClientAdapter $clientAdapter
